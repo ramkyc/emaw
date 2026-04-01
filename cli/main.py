@@ -4,10 +4,12 @@ import argparse
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
-from cli.config import DEFAULT_CONFIG_PATH, save
+from cli.config import DEFAULT_CONFIG_PATH, load, save
 from cli.env import detect
 from cli.questionnaire import ask
 from cli.generator import generate_workspace
+from cli.profile import resolve
+from cli.doctor import run_checks, print_report
 from pathlib import Path
 
 try:
@@ -30,9 +32,20 @@ def cmd_init(args: argparse.Namespace) -> int:  # noqa: ARG001
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:  # noqa: ARG001
-    """Stub for the doctor subcommand."""
-    print("emaw doctor: not yet implemented")
-    return 0
+    """Validate system tools and Python dependencies against the profile."""
+    try:
+        cfg = load()
+    except Exception as e:
+        print("Error: Could not load workspace.toml.")
+        print("Please run `emaw init` first to generate a workspace configuration.")
+        return 1
+        
+    reqs = resolve(cfg)
+    results = run_checks(reqs, cfg)
+    print_report(results, cfg)
+    
+    missing_deps = any(not r.status for r in results)
+    return 1 if missing_deps else 0
 
 
 def cmd_sync(args: argparse.Namespace) -> int:  # noqa: ARG001

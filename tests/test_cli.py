@@ -39,13 +39,23 @@ def test_cmd_init_returns_zero(tmp_path, monkeypatch, capsys):
     assert "saved" in captured.out
 
 
-def test_cmd_doctor_returns_zero(capsys):
+def test_cmd_doctor_returns_zero(monkeypatch, capsys):
+    from cli.questionnaire import WorkspaceConfig
+    fake_cfg = WorkspaceConfig(
+        emacs_style="minimal", profile="python-general",
+        ai_provider="claude", os_name="macos",
+        python_version="3.13.0", emacs_path=None, emacs_version=None,
+    )
+    monkeypatch.setattr("cli.main.load", lambda: fake_cfg)
+    monkeypatch.setattr("cli.main.run_checks", lambda reqs, cfg: [])
+    monkeypatch.setattr("cli.main.print_report", lambda res, cfg: print("doctor mock output"))
+
     parser = build_parser()
     args = parser.parse_args(["doctor"])
     result = cmd_doctor(args)
     assert result == 0
     captured = capsys.readouterr()
-    assert "doctor" in captured.out
+    assert "doctor mock output" in captured.out
 
 
 def test_cmd_sync_returns_zero(capsys):
@@ -110,8 +120,8 @@ def test_subprocess_init():
 
 def test_subprocess_doctor():
     result = _run("doctor")
-    assert result.returncode == 0
-    assert "doctor" in result.stdout
+    assert result.returncode in (0, 1)
+    assert "Doctor" in result.stdout or "Error:" in result.stdout
 
 
 def test_subprocess_sync():
