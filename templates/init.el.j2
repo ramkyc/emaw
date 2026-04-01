@@ -1,0 +1,33 @@
+;; init.el --- Auto-generated Emacs AI Workspace
+;; Profile: {{ config.profile }}
+;; AI Provider: {{ config.ai_provider }}
+
+;; Package initialization
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("gnu" . "https://elpa.gnu.org/packages/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+(package-initialize)
+
+;; Install use-package if not present
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(eval-when-compile (require 'use-package))
+(setq use-package-always-ensure t)
+
+;; Resolved Emacs Packages from ProfileRequirements
+{% for pkg in reqs.emacs_packages %}
+(use-package {{ pkg }})
+{% endfor %}
+
+;; Load task commands mapping
+(message "Workspace booted. Available task commands:")
+{% for cmd in reqs.task_commands %}
+(message "- {{ cmd }}")
+{% endfor %}
+
+;; AI Adapter Integration
+{% for adapter in reqs.ai_adapters %}
+(message "Configured AI Adapter: {{ adapter }}")
+{% endfor %}

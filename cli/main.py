@@ -7,6 +7,8 @@ from importlib.metadata import PackageNotFoundError, version
 from cli.config import DEFAULT_CONFIG_PATH, save
 from cli.env import detect
 from cli.questionnaire import ask
+from cli.generator import generate_workspace
+from pathlib import Path
 
 try:
     _VERSION = version("emacs-ai-workspace")
@@ -20,6 +22,10 @@ def cmd_init(args: argparse.Namespace) -> int:  # noqa: ARG001
     cfg = ask(env)
     save(cfg)
     print(f"\nWorkspace config saved to {DEFAULT_CONFIG_PATH}")
+    
+    dest_dir = Path.cwd() / ".emaw"
+    generate_workspace(cfg, dest_dir)
+    print(f"Generated workspace files in {dest_dir}")
     return 0
 
 
