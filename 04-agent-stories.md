@@ -33,3 +33,37 @@ grow into.
 doctor logic.
 
 **Next story:** Story 1.2 – Environment Detection.
+
+---
+
+### Story 1.2 – Environment Detection ✅
+
+**As a** developer running `emaw init`,
+**I want** the tool to detect my OS, Python version, and Emacs
+installation automatically,
+**so that** subsequent steps can make informed decisions without asking
+me for information the system already knows.
+
+**Acceptance criteria:**
+
+- `detect()` returns an `EnvInfo` dataclass with `os_name`,
+  `python_version`, `python_major`, `python_minor`, `emacs_path`, and
+  `emacs_version`.
+- `os_name` is `"macos"` on macOS, `"linux"` on Linux, and
+  `"unsupported"` otherwise.
+- `emacs_path` is `None` when Emacs is not in PATH.
+- `emacs_version` is `None` when Emacs is absent or its output cannot
+  be parsed.
+- All acceptance criteria are covered by automated tests.
+
+**Files introduced:**
+
+| File | Purpose |
+| --- | --- |
+| `cli/env.py` | `EnvInfo` dataclass and `detect()` function. Stdlib only. |
+| `tests/test_env.py` | 11 tests: real-env smoke, OS branches, Emacs path/version, error path. |
+
+**Not included:** min-version validation, wiring into `init`, profile
+resolution, doctor logic.
+
+**Next story:** Story 1.3 – Questionnaire and Config.

@@ -63,8 +63,10 @@ stop and reconcile before proceeding.
 |-- 04-agent-stories.md
 |-- cli/
 |   |-- __init__.py
+|   |-- env.py            # environment detection (OS, Python, Emacs)
 |   `-- main.py           # argparse entrypoint (init, doctor, sync stubs)
 `-- tests/
     |-- __init__.py
-    `-- test_cli.py
+    |-- test_cli.py
+    `-- test_env.py
 ```
