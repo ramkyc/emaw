@@ -13,13 +13,30 @@ from cli.main import build_parser, cmd_doctor, cmd_init, cmd_sync
 # ---------------------------------------------------------------------------
 
 
-def test_cmd_init_returns_zero(capsys):
+def test_cmd_init_returns_zero(tmp_path, monkeypatch, capsys):
+    from cli.env import EnvInfo
+    from cli.questionnaire import WorkspaceConfig
+
+    fake_env = EnvInfo(
+        os_name="macos", python_version="3.13.0",
+        python_major=3, python_minor=13,
+        emacs_path=None, emacs_version=None,
+    )
+    fake_cfg = WorkspaceConfig(
+        emacs_style="minimal", profile="python-general",
+        ai_provider="claude", os_name="macos",
+        python_version="3.13.0", emacs_path=None, emacs_version=None,
+    )
+    monkeypatch.setattr("cli.main.detect", lambda: fake_env)
+    monkeypatch.setattr("cli.main.ask", lambda env: fake_cfg)
+    monkeypatch.setattr("cli.main.save", lambda cfg: None)
+
     parser = build_parser()
     args = parser.parse_args(["init"])
     result = cmd_init(args)
     assert result == 0
     captured = capsys.readouterr()
-    assert "init" in captured.out
+    assert "saved" in captured.out
 
 
 def test_cmd_doctor_returns_zero(capsys):
@@ -80,9 +97,15 @@ def _run(*args: str) -> subprocess.CompletedProcess:
 
 
 def test_subprocess_init():
-    result = _run("init")
+    # Pipe answers so the questionnaire completes without blocking.
+    result = subprocess.run(
+        [sys.executable, "-m", "cli.main", "init"],
+        input="1\n1\n1\n",
+        capture_output=True,
+        text=True,
+    )
     assert result.returncode == 0
-    assert "init" in result.stdout
+    assert "saved" in result.stdout
 
 
 def test_subprocess_doctor():

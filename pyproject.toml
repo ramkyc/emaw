@@ -7,7 +7,7 @@ name = "emacs-ai-workspace"
 version = "0.1.0"
 description = "Provision a productive AI-assisted coding environment in Emacs."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = []
 

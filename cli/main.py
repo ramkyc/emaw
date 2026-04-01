@@ -4,6 +4,10 @@ import argparse
 import sys
 from importlib.metadata import PackageNotFoundError, version
 
+from cli.config import DEFAULT_CONFIG_PATH, save
+from cli.env import detect
+from cli.questionnaire import ask
+
 try:
     _VERSION = version("emacs-ai-workspace")
 except PackageNotFoundError:
@@ -11,8 +15,11 @@ except PackageNotFoundError:
 
 
 def cmd_init(args: argparse.Namespace) -> int:  # noqa: ARG001
-    """Stub for the init subcommand."""
-    print("emaw init: not yet implemented")
+    """Run the setup questionnaire and persist the workspace config."""
+    env = detect()
+    cfg = ask(env)
+    save(cfg)
+    print(f"\nWorkspace config saved to {DEFAULT_CONFIG_PATH}")
     return 0
 
 

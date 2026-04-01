@@ -67,3 +67,34 @@ me for information the system already knows.
 resolution, doctor logic.
 
 **Next story:** Story 1.3 – Questionnaire and Config.
+
+---
+
+### Story 1.3 – Questionnaire and Config ✅
+
+**As a** developer running `emaw init`,
+**I want** to answer a short setup questionnaire and have my answers saved
+alongside the detected system information,
+**so that** a consistent workspace configuration is persisted before code
+generation begins.
+
+**Acceptance criteria:**
+
+- `emaw init` asks 3 questions: Emacs style, profile, AI provider.
+- Each question has a sensible default (Option 1) which is selected if the user enters nothing or provides invalid input.
+- System detected parameters (`os_name`, `python_version`, `emacs_path`, `emacs_version`) are merged with questionnaire answers into a single `WorkspaceConfig`.
+- Configuration is saved in TOML format to `~/.config/emacs-ai-workspace/workspace.toml`.
+- All criteria are verified by automated tests.
+
+**Files introduced:**
+
+| File | Purpose |
+| --- | --- |
+| `cli/questionnaire.py` | Core interactive logic, injecting `_input` for unit testing. |
+| `cli/config.py` | Load/Save TOML configuration without 3rd-party dependencies. |
+| `tests/test_questionnaire.py` | Tests covering inputs and environment field passing. |
+| `tests/test_config.py` | Tests covering serialization, deserialization, overwrites. |
+
+**Not included:** Config generation, doctor flow, profile resolution.
+
+**Next story:** Story 1.4 – Profile Schema and Resolver.

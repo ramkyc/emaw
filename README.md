@@ -63,10 +63,14 @@ stop and reconcile before proceeding.
 |-- 04-agent-stories.md
 |-- cli/
 |   |-- __init__.py
+|   |-- config.py         # TOML persistence (save/load workspace.toml)
 |   |-- env.py            # environment detection (OS, Python, Emacs)
-|   `-- main.py           # argparse entrypoint (init, doctor, sync stubs)
+|   |-- main.py           # argparse entrypoint (init, doctor, sync)
+|   `-- questionnaire.py  # interactive questionnaire + WorkspaceConfig
 `-- tests/
     |-- __init__.py
     |-- test_cli.py
-    `-- test_env.py
+    |-- test_config.py
+    |-- test_env.py
+    `-- test_questionnaire.py
 ```
