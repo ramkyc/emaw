@@ -21,7 +21,10 @@
   (should (fboundp 'emaw-sync))
   (should (commandp 'emaw-sync))
   (should (fboundp 'emaw-task-run-tests))
-  (should (commandp 'emaw-task-run-tests)))
+  (should (commandp 'emaw-task-run-tests))
+  ;; Internal helpers
+  (should (fboundp 'emaw--task-sentinel))
+  (should (fboundp 'emaw--run-task)))
 
 (ert-deftest emaw-mode-test-keymap ()
   "Test that the keymap is bound correctly."
@@ -32,6 +35,47 @@
   (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e i")) 'emaw-init))
   (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e s")) 'emaw-sync))
   (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e t 1")) 'emaw-task-run-tests)))
+
+(ert-deftest emaw-sentinel-sets-status-on-success ()
+  "Sentinel sets emaw--last-task-status to SUCCESS when output contains [SUCCESS]."
+  (let ((buf (generate-new-buffer "*emaw-test-sentinel*")))
+    (unwind-protect
+        (progn
+          (with-current-buffer buf
+            (insert "Some output\nemaw: task run-tests [SUCCESS]\n"))
+          ;; Call sentinel directly — no real process needed.
+          ;; We pass a dummy proc whose buffer is `buf'.
+          (let ((fake-proc (start-process "emaw-test-dummy" buf "true")))
+            (while (process-live-p fake-proc) (sleep-for 0.05))
+            (emaw--task-sentinel fake-proc "finished\n" "run-tests"))
+          (should (equal emaw--last-task-status "run-tests [SUCCESS]")))
+      (kill-buffer buf))))
+
+(ert-deftest emaw-sentinel-sets-status-on-failure ()
+  "Sentinel sets emaw--last-task-status to FAILED when output contains [FAILED]."
+  (let ((buf (generate-new-buffer "*emaw-test-sentinel-fail*")))
+    (unwind-protect
+        (progn
+          (with-current-buffer buf
+            (insert "Some output\nemaw: task run-tests [FAILED] (exit code 1)\n"))
+          (let ((fake-proc (start-process "emaw-test-dummy-fail" buf "true")))
+            (while (process-live-p fake-proc) (sleep-for 0.05))
+            (emaw--task-sentinel fake-proc "exited abnormally with code 1\n" "run-tests"))
+          (should (equal emaw--last-task-status "run-tests [FAILED]")))
+      (kill-buffer buf))))
+
+(ert-deftest emaw-sentinel-defaults-to-failed-on-missing-marker ()
+  "Sentinel defaults to FAILED when buffer contains neither SUCCESS nor FAILED marker."
+  (let ((buf (generate-new-buffer "*emaw-test-sentinel-empty*")))
+    (unwind-protect
+        (progn
+          (with-current-buffer buf
+            (insert "Process exited\n"))
+          (let ((fake-proc (start-process "emaw-test-dummy-empty" buf "true")))
+            (while (process-live-p fake-proc) (sleep-for 0.05))
+            (emaw--task-sentinel fake-proc "finished\n" "lint-code"))
+          (should (equal emaw--last-task-status "lint-code [FAILED]")))
+      (kill-buffer buf))))
 
 (provide 'test_emaw_mode)
 ;;; test_emaw_mode.el ends here

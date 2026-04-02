@@ -218,3 +218,24 @@ Automatically discover real project tasks from common files (pyproject.toml, Mak
 - Discovery is additive — profile tasks always available as fallback
 - Validation is non-destructive (reports only)
 - Keep `tasks.json` format unchanged
+---
+
+## Story 4.5: Emacs Task Status and Sentinels
+
+**Scope**
+Parse CLI task output in Emacs, show success/failure status, and provide
+completion notifications.
+
+**Requirements**
+
+- Parse SUCCESS/FAILED markers from task output in Emacs buffers
+- Show task status in mode-line via `emaw--last-task-status` global variable
+- Replace `async-shell-command` in task defuns with `start-process-shell-command`
+  and a named `process-sentinel`
+- Keep `async-shell-command` for doctor/init/sync — those require no tracking
+
+**Acceptance Criteria**
+
+- Long-running task completes: mode-line shows `emaw:run-tests SUCCESS`
+- Failed task: mode-line shows `emaw:run-tests FAILED`
+- ERT tests for sentinel parsing and status display

@@ -14,6 +14,42 @@
   "Emacs AI Workspace settings."
   :group 'tools)
 
+(defvar emaw--last-task-status nil
+  "Last completed task name and result string shown in the mode-line.
+ Example: \"run-tests [SUCCESS]\"")
+
+(defun emaw--task-sentinel (proc event task-name)
+  "Sentinel for emaw task processes.
+Updates `emaw--last-task-status' and the mode-line on process completion.
+PROC is the process, EVENT is the event string, TASK-NAME is the task label."
+  (when (memq (process-status proc) '(exit signal))
+    (let* ((buf     (process-buffer proc))
+           (content (if (buffer-live-p buf)
+                        (with-current-buffer buf (buffer-string))
+                      ""))
+           (success (string-match-p "\\[SUCCESS\\]" content))
+           (label   (if success "[SUCCESS]" "[FAILED]")))
+      (setq emaw--last-task-status (format "%s %s" task-name label))
+      (force-mode-line-update t)
+      (message "emaw: task %s %s" task-name label))))
+
+(defun emaw--run-task (task-name)
+  "Start `emaw task TASK-NAME' with a sentinel for status tracking."
+  (let* ((buf-name (format "*emaw-task-%s*" task-name))
+         (buf      (get-buffer-create buf-name))
+         (root     (or (locate-dominating-file default-directory ".emaw")
+                       default-directory))
+         (proc     (let ((default-directory root))
+                     (start-process-shell-command
+                      (format "emaw-task-%s" task-name)
+                      buf
+                      (format "emaw task %s" task-name)))))
+    (pop-to-buffer buf)
+    (set-process-sentinel
+     proc
+     (lambda (p e)
+       (emaw--task-sentinel p e task-name)))))
+
 (defun emaw-doctor ()
   "Run the emaw doctor validations and show the output."
   (interactive)
@@ -36,8 +72,7 @@
 (defun emaw-task-{{ task_name }} ()
   "Run the {{ task_name }} task (`{{ task_cmd }}') and show the output."
   (interactive)
-  (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
-    (async-shell-command "emaw task {{ task_name }}" "*emaw-task-{{ task_name }}*")))
+  (emaw--run-task "{{ task_name }}"))
 {% endfor %}
 
 (defvar emaw-mode-map
@@ -61,7 +96,9 @@
 (define-minor-mode emaw-mode
   "Minor mode for Emacs AI Workspace workflows."
   :init-value nil
-  :lighter " emaw"
+  :lighter (:eval (concat " emaw"
+                          (when emaw--last-task-status
+                            (concat ":" emaw--last-task-status))))
   :keymap emaw-mode-map
   :global nil)
 

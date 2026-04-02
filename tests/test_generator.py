@@ -201,7 +201,11 @@ def test_emaw_mode_content(
     assert "C-c C-e s" in text
     assert "(defun emaw-task-run-tests ()" in text
     assert "(defun emaw-task-format-code ()" in text
-    assert "(async-shell-command \"emaw task run-tests\"" in text
+    # Tasks now delegate to emaw--run-task, not async-shell-command directly
+    assert "(emaw--run-task \"run-tests\")" in text
+    assert "(defun emaw--run-task" in text
+    assert "(defun emaw--task-sentinel" in text
+    assert "emaw--last-task-status" in text
     assert "locate-dominating-file default-directory \".emaw\"" in text
     assert "C-c C-e t 1" in text
     assert "#'emaw-task-run-tests" in text
