@@ -28,6 +28,14 @@
 {% endfor %}
 
 ;; AI Adapter Integration
+{% if reqs.ai_adapters %}
 {% for adapter in reqs.ai_adapters %}
-(message "Configured AI Adapter: {{ adapter }}")
+(let ((adapter-file (expand-file-name "{{ adapter }}-adapter.el"
+                      (file-name-directory (or load-file-name buffer-file-name)))))
+  (if (file-exists-p adapter-file)
+      (load-file adapter-file)
+    (message "emaw: adapter file not found: %s" adapter-file)))
 {% endfor %}
+{% else %}
+(message "emaw: no AI adapter configured")
+{% endif %}

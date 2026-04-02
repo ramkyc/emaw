@@ -78,10 +78,15 @@ def resolve(config: WorkspaceConfig) -> ProfileRequirements:
         reqs.ai_adapters.append("claude")
         if "node" not in reqs.system_dependencies:
             reqs.system_dependencies.extend(["node", "npm"])
+        # claude-code.el requires vterm (compiled Emacs package) and
+        # the claude-code MELPA package itself
+        reqs.emacs_packages.extend(["vterm", "claude-code"])
     elif config.ai_provider == "ollama":
         reqs.ai_adapters.append("ollama")
         if "ollama" not in reqs.system_dependencies:
             reqs.system_dependencies.append("ollama")
+        # gptel provides Ollama support via gptel-make-ollama
+        reqs.emacs_packages.append("gptel")
 
     # Deduplicate dependencies while preserving order
     reqs.system_dependencies = list(dict.fromkeys(reqs.system_dependencies))
