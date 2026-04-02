@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-from cli.main import build_parser, cmd_doctor, cmd_init, cmd_sync
+from cli.main import build_parser, cmd_doctor, cmd_init, cmd_sync, cmd_task
 
 
 # ---------------------------------------------------------------------------
@@ -65,6 +65,15 @@ def test_cmd_sync_returns_zero(capsys):
     assert result == 0
     captured = capsys.readouterr()
     assert "sync" in captured.out
+
+
+def test_cmd_task_returns_zero(capsys):
+    parser = build_parser()
+    args = parser.parse_args(["task", "mock-task"])
+    result = cmd_task(args)
+    assert result == 0
+    captured = capsys.readouterr()
+    assert "mock-task" in captured.out
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +137,12 @@ def test_subprocess_sync():
     result = _run("sync")
     assert result.returncode == 0
     assert "sync" in result.stdout
+
+
+def test_subprocess_task():
+    result = _run("task", "mock-task")
+    assert result.returncode == 0
+    assert "mock-task" in result.stdout
 
 
 def test_subprocess_no_args_fails():

@@ -17,7 +17,11 @@
   (should (fboundp 'emaw-doctor))
   (should (commandp 'emaw-doctor))
   (should (fboundp 'emaw-init))
-  (should (commandp 'emaw-init)))
+  (should (commandp 'emaw-init))
+  (should (fboundp 'emaw-sync))
+  (should (commandp 'emaw-sync))
+  (should (fboundp 'emaw-task-run-tests))
+  (should (commandp 'emaw-task-run-tests)))
 
 (ert-deftest emaw-mode-test-keymap ()
   "Test that the keymap is bound correctly."
@@ -25,7 +29,9 @@
   (should (keymapp emaw-mode-map))
   ;; Check that our keys are bound in the map
   (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e d")) 'emaw-doctor))
-  (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e i")) 'emaw-init)))
+  (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e i")) 'emaw-init))
+  (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e s")) 'emaw-sync))
+  (should (eq (lookup-key emaw-mode-map (kbd "C-c C-e t 1")) 'emaw-task-run-tests)))
 
 (provide 'test_emaw_mode)
 ;;; test_emaw_mode.el ends here

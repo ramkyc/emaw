@@ -17,12 +17,28 @@
 (defun emaw-doctor ()
   "Run the emaw doctor validations and show the output."
   (interactive)
-  (async-shell-command "emaw doctor" "*emaw-doctor*"))
+  (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
+    (async-shell-command "emaw doctor" "*emaw-doctor*")))
 
 (defun emaw-init ()
   "Run the emaw init configuration process and show the output."
   (interactive)
-  (async-shell-command "emaw init" "*emaw-init*"))
+  (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
+    (async-shell-command "emaw init" "*emaw-init*")))
+
+(defun emaw-sync ()
+  "Run the emaw sync synchronization process and show the output."
+  (interactive)
+  (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
+    (async-shell-command "emaw sync" "*emaw-sync*")))
+
+{% for task in reqs.task_commands %}
+(defun emaw-task-{{ task }} ()
+  "Run the emaw {{ task }} task and show the output."
+  (interactive)
+  (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
+    (async-shell-command "emaw task {{ task }}" "*emaw-task-{{ task }}*")))
+{% endfor %}
 
 (defvar emaw-mode-map
   (let ((map (make-sparse-keymap)))
@@ -31,6 +47,13 @@
     (define-key map (kbd "C-c C-e") 'emaw-prefix-map)
     (define-key map (kbd "C-c C-e d") #'emaw-doctor)
     (define-key map (kbd "C-c C-e i") #'emaw-init)
+    (define-key map (kbd "C-c C-e s") #'emaw-sync)
+    
+    (define-prefix-command 'emaw-task-prefix-map)
+    (define-key map (kbd "C-c C-e t") 'emaw-task-prefix-map)
+    {% for task in reqs.task_commands %}
+    (define-key map (kbd "C-c C-e t {{ loop.index }}") #'emaw-task-{{ task }})
+    {% endfor %}
     map)
   "Keymap for `emaw-mode'.")
 

@@ -190,8 +190,17 @@ def test_emaw_mode_content(
     text = (dest_dir / "emaw-mode.el").read_text()
     assert "(defun emaw-doctor ()" in text
     assert "(defun emaw-init ()" in text
+    assert "(defun emaw-sync ()" in text
     assert "(async-shell-command \"emaw doctor\"" in text
     assert "(async-shell-command \"emaw init\"" in text
+    assert "(async-shell-command \"emaw sync\"" in text
     assert "(define-minor-mode emaw-mode" in text
     assert "C-c C-e d" in text
     assert "C-c C-e i" in text
+    assert "C-c C-e s" in text
+    assert "(defun emaw-task-run-tests ()" in text
+    assert "(defun emaw-task-format-code ()" in text
+    assert "(async-shell-command \"emaw task run-tests\"" in text
+    assert "locate-dominating-file default-directory \".emaw\"" in text
+    assert "C-c C-e t 1" in text
+    assert "#'emaw-task-run-tests" in text

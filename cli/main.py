@@ -54,6 +54,12 @@ def cmd_sync(args: argparse.Namespace) -> int:  # noqa: ARG001
     return 0
 
 
+def cmd_task(args: argparse.Namespace) -> int:
+    """Stub for the task subcommand."""
+    print(f"emaw task: executing {args.task_name} (not yet implemented)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Return the top-level argument parser."""
     parser = argparse.ArgumentParser(
@@ -70,6 +76,9 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("init", help="Initialise a new Emacs AI workspace.")
     subparsers.add_parser("doctor", help="Run workspace health checks.")
     subparsers.add_parser("sync", help="Sync workspace with the latest generated config.")
+    
+    task_parser = subparsers.add_parser("task", help="Execute a workspace task.")
+    task_parser.add_argument("task_name", help="Name of the task to execute")
 
     return parser
 
@@ -78,6 +87,7 @@ _COMMANDS = {
     "init": cmd_init,
     "doctor": cmd_doctor,
     "sync": cmd_sync,
+    "task": cmd_task,
 }
 
 

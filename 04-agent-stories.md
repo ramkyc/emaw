@@ -127,3 +127,39 @@ Create the core Emacs minor mode that orchestrates emaw workflows from inside Em
 - No complex async handling yet
 - Simple buffer output only
 - No package installation or dependency management yet
+
+---
+
+### Story 4.2: Emacs Task Commands Integration (minimal)
+
+**Scope**
+Expose generated workspace task commands inside Emacs through `emaw-mode`, so users can run project-specific commands from the existing `C-c C-e` prefix.
+
+**Requirements**
+- Generate Emacs Lisp commands for task commands derived from the resolved profile requirements
+- Add those commands to `emaw-mode`
+- Run task commands through `async-shell-command`
+- Use dedicated output buffers named from the task, for example `*emaw-task-sync*`
+- Keep the current `C-c C-e` prefix and extend it without changing existing bindings
+
+**Acceptance Criteria**
+- Generated `emaw-mode.el` contains interactive commands for available task commands
+- At least these tasks are supported when present in the resolved profile: `sync`, `doctor`, `init`
+- `M-x` can invoke generated task commands directly
+- Keybindings under `C-c C-e` are added for generated tasks
+- Output appears in task-specific `*emaw-*` buffers
+- Tests verify command generation, keymap bindings, and Elisp loadability
+
+**Constraints**
+- Use `async-shell-command`
+- No transient UI, hydra, or completion framework yet
+- No dynamic runtime discovery of tasks from disk; use generated config/template context only
+- No advanced async callbacks or process sentinels yet
+- Keep changes small and reviewable
+
+**Suggested keybinding model**
+- `C-c C-e i` → `emaw-init`
+- `C-c C-e d` → `emaw-doctor`
+- `C-c C-e s` → `emaw-sync`
+- Additional task bindings added dynamically via `C-c C-e t <index>` mapping deterministically.
+
