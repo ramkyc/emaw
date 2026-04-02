@@ -4,14 +4,35 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "emacs-ai-workspace"
-version = "0.1.0"
+version = "1.0.0"
 description = "Provision a productive AI-assisted coding environment in Emacs."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+authors = [{ name = "emaw contributors" }]
+keywords = ["emacs", "ai", "workspace", "claude", "ollama", "developer-tools"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Text Editors :: Emacs",
+]
 dependencies = [
     "jinja2",
 ]
+
+[project.urls]
+Homepage = "https://github.com/yourname/emacs_tool"
+Repository = "https://github.com/yourname/emacs_tool"
+"Bug Tracker" = "https://github.com/yourname/emacs_tool/issues"
 
 [project.scripts]
 emaw = "cli.main:main"
@@ -19,9 +40,22 @@ emaw = "cli.main:main"
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "ruff",
+    "black",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["cli*"]
 exclude = ["tests*"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]

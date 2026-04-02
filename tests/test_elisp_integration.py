@@ -41,9 +41,12 @@ def test_emaw_mode_ert(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
         emacs_bin,
         "-Q",
         "--batch",
-        "-l", str(emaw_mode_el),
-        "-l", str(test_el),
-        "-f", "ert-run-tests-batch-and-exit"
+        "-l",
+        str(emaw_mode_el),
+        "-l",
+        str(test_el),
+        "-f",
+        "ert-run-tests-batch-and-exit",
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)

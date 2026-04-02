@@ -10,10 +10,10 @@ from cli.env import EnvInfo
 class WorkspaceConfig:
     """User answers combined with environment snapshot."""
 
-    emacs_style: str        # "minimal" | "doom"
-    profile: str            # "python-general" | "python-quant" |
-                            #   "claude-centric" | "local-ollama"
-    ai_provider: str        # "claude" | "ollama" | "none"
+    emacs_style: str  # "minimal" | "doom"
+    profile: str  # "python-general" | "python-quant" |
+    #   "claude-centric" | "local-ollama"
+    ai_provider: str  # "claude" | "ollama" | "none"
     os_name: str
     python_version: str
     emacs_path: str | None

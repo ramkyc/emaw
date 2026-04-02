@@ -4,10 +4,7 @@ import re
 import subprocess
 import sys
 
-import pytest
-
 from cli.env import EnvInfo, detect
-
 
 # ---------------------------------------------------------------------------
 # Real-environment tests (run on actual machine)

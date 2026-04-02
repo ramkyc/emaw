@@ -1,11 +1,10 @@
 """Tests for the workspace doctor."""
 
-from unittest.mock import patch, MagicMock
 import urllib.error
-import sys
 from io import StringIO
+from unittest.mock import MagicMock, patch
 
-from cli.doctor import run_checks, _SYSTEM_EXEC_MAP, _check_ai_adapter, print_report, CheckResult
+from cli.doctor import _SYSTEM_EXEC_MAP, CheckResult, _check_ai_adapter, print_report, run_checks
 from cli.profile import ProfileRequirements
 from cli.questionnaire import WorkspaceConfig
 
@@ -35,7 +34,7 @@ def test_doctor_all_pass() -> None:
         results = run_checks(reqs, cfg)
 
         assert all(r.status is True for r in results)
-        
+
         # We always check emacs automatically, plus 5 deps in the list, plus 1 AI adapter
         names = {r.name for r in results}
         assert names == {"emacs", "git", "ripgrep", "python3", "node", "jinja2", "claude"}
@@ -63,14 +62,16 @@ def test_doctor_missing_tools() -> None:
         if cmd == "git":
             return "/usr/bin/git"
         return None  # everything else missing
-        
+
     def mock_find_impl(name: str):
         if name == "jinja2":
             return None  # missing package
         return True
 
-    with patch("shutil.which", side_effect=mock_which_impl), \
-         patch("importlib.util.find_spec", side_effect=mock_find_impl):
+    with (
+        patch("shutil.which", side_effect=mock_which_impl),
+        patch("importlib.util.find_spec", side_effect=mock_find_impl),
+    ):
         results = run_checks(reqs, cfg)
 
         r_map = {r.name: r.status for r in results}

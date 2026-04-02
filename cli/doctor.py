@@ -3,8 +3,8 @@
 import importlib.util
 import json
 import shutil
-import urllib.request
 import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -112,7 +112,7 @@ def _check_ai_adapter(name: str) -> CheckResult:
                 status=False,
                 details="connection refused or timeout on localhost:11434",
             )
-    
+
     return CheckResult(
         name=name,
         category="adapter",
@@ -162,28 +162,34 @@ def check_tasks(tasks_file: Path) -> list[CheckResult]:
     for label, cmd in tasks.items():
         binary = _extract_executable(cmd)
         if not binary:
-            results.append(CheckResult(
-                name=label,
-                category="task",
-                status=False,
-                details=f"{cmd!r} \u2192 could not determine executable",
-            ))
+            results.append(
+                CheckResult(
+                    name=label,
+                    category="task",
+                    status=False,
+                    details=f"{cmd!r} \u2192 could not determine executable",
+                )
+            )
             continue
         found = shutil.which(binary)
         if found:
-            results.append(CheckResult(
-                name=label,
-                category="task",
-                status=True,
-                details=f"{cmd} \u2713",
-            ))
+            results.append(
+                CheckResult(
+                    name=label,
+                    category="task",
+                    status=True,
+                    details=f"{cmd} \u2713",
+                )
+            )
         else:
-            results.append(CheckResult(
-                name=label,
-                category="task",
-                status=False,
-                details=f"{cmd} \u2717 (missing {binary})",
-            ))
+            results.append(
+                CheckResult(
+                    name=label,
+                    category="task",
+                    status=False,
+                    details=f"{cmd} \u2717 (missing {binary})",
+                )
+            )
     return results
 
 
@@ -259,4 +265,6 @@ def print_report(
     if missing_count == 0:
         print("All dependencies are satisfied. You are ready to go!")
     else:
-        print(f"{missing_count} missing dependencies. Please install them to ensure full functionality.")
+        print(
+            f"{missing_count} missing dependencies. Please install them to ensure full functionality."
+        )

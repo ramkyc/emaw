@@ -31,7 +31,7 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
 
     # Merge: profile tasks act as fallback; discovered tasks take precedence.
     merged_tasks: dict[str, str] = dict(reqs.task_commands)  # start with profile
-    merged_tasks.update(discovered)                           # discovered wins on collision
+    merged_tasks.update(discovered)  # discovered wins on collision
     reqs.task_commands = merged_tasks
 
     # Write merged tasks map to workspace directory.
@@ -59,6 +59,4 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
             continue
         adapter_template = env.get_template(f"ai-adapters/{adapter}.el.j2")
         adapter_content = adapter_template.render(**context)
-        (dest_dir / f"{adapter}-adapter.el").write_text(
-            adapter_content, encoding="utf-8"
-        )
+        (dest_dir / f"{adapter}-adapter.el").write_text(adapter_content, encoding="utf-8")

@@ -1,6 +1,7 @@
 """Profile definitions and resolver for Emacs workspace."""
 
 from dataclasses import dataclass, field
+
 from cli.questionnaire import WorkspaceConfig
 
 

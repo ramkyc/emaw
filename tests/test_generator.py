@@ -50,9 +50,7 @@ def no_ai_config() -> WorkspaceConfig:
     )
 
 
-def test_generate_workspace_creates_files(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_generate_workspace_creates_files(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """Verify that generate_workspace emits the correctly named files."""
     dest_dir = tmp_path / ".emaw"
 
@@ -65,9 +63,7 @@ def test_generate_workspace_creates_files(
     assert (dest_dir / "tasks.json").is_file()
 
 
-def test_generate_workspace_content(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_generate_workspace_content(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """Verify that templates render dynamic choices properly."""
     dest_dir = tmp_path / ".emaw"
 
@@ -92,9 +88,7 @@ def test_generate_workspace_content(
 # ---------------------------------------------------------------------------
 
 
-def test_generate_claude_adapter_creates_file(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_generate_claude_adapter_creates_file(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """claude adapter file is created when ai_provider is claude."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
@@ -120,9 +114,7 @@ def test_no_adapter_file_when_provider_is_none(
     assert not (dest_dir / "ollama-adapter.el").exists()
 
 
-def test_claude_adapter_content(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_claude_adapter_content(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """Generated claude-adapter.el contains required packages and keybindings."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
@@ -130,15 +122,13 @@ def test_claude_adapter_content(
     text = (dest_dir / "claude-adapter.el").read_text()
     assert "(use-package vterm" in text
     assert "(use-package claude-code" in text
-    assert 'C-c C-a' in text
+    assert "C-c C-a" in text
     assert "#'claude-code" in text
     assert "#'claude-code-send-region" in text
     assert "#'claude-code-send-buffer" in text
 
 
-def test_ollama_adapter_content(
-    ollama_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_ollama_adapter_content(ollama_config: WorkspaceConfig, tmp_path: Path) -> None:
     """Generated ollama-adapter.el contains gptel config and keybindings."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(ollama_config, dest_dir)
@@ -147,14 +137,12 @@ def test_ollama_adapter_content(
     assert "(use-package gptel" in text
     assert "gptel-make-ollama" in text
     assert "localhost:11434" in text
-    assert 'C-c C-a' in text
+    assert "C-c C-a" in text
     assert "#'gptel-send" in text
     assert "#'gptel-rewrite" in text
 
 
-def test_init_el_loads_claude_adapter(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_init_el_loads_claude_adapter(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """init.el contains a load-file call referencing claude-adapter.el."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
@@ -169,9 +157,7 @@ def test_init_el_loads_claude_adapter(
 # ---------------------------------------------------------------------------
 
 
-def test_init_el_loads_emaw_mode(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_init_el_loads_emaw_mode(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """init.el contains code to load and hook emaw-mode.el."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
@@ -181,9 +167,7 @@ def test_init_el_loads_emaw_mode(
     assert "prog-mode-hook" in init_text
 
 
-def test_emaw_mode_content(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_emaw_mode_content(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """Generated emaw-mode.el contains the necessary interactive commands and map."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
@@ -192,9 +176,9 @@ def test_emaw_mode_content(
     assert "(defun emaw-doctor ()" in text
     assert "(defun emaw-init ()" in text
     assert "(defun emaw-sync ()" in text
-    assert "(async-shell-command \"emaw doctor\"" in text
-    assert "(async-shell-command \"emaw init\"" in text
-    assert "(async-shell-command \"emaw sync\"" in text
+    assert '(async-shell-command "emaw doctor"' in text
+    assert '(async-shell-command "emaw init"' in text
+    assert '(async-shell-command "emaw sync"' in text
     assert "(define-minor-mode emaw-mode" in text
     assert "C-c C-e d" in text
     assert "C-c C-e i" in text
@@ -202,23 +186,22 @@ def test_emaw_mode_content(
     assert "(defun emaw-task-run-tests ()" in text
     assert "(defun emaw-task-format-code ()" in text
     # Tasks now delegate to emaw--run-task, not async-shell-command directly
-    assert "(emaw--run-task \"run-tests\")" in text
+    assert '(emaw--run-task "run-tests")' in text
     assert "(defun emaw--run-task" in text
     assert "(defun emaw--task-sentinel" in text
     assert "emaw--last-task-status" in text
-    assert "locate-dominating-file default-directory \".emaw\"" in text
+    assert 'locate-dominating-file default-directory ".emaw"' in text
     assert "C-c C-e t 1" in text
     assert "#'emaw-task-run-tests" in text
 
 
-def test_generate_tasks_json_content(
-    mock_config: WorkspaceConfig, tmp_path: Path
-) -> None:
+def test_generate_tasks_json_content(mock_config: WorkspaceConfig, tmp_path: Path) -> None:
     """tasks.json maps labels to shell execution commands."""
     dest_dir = tmp_path / ".emaw"
     generate_workspace(mock_config, dest_dir)
 
     import json
+
     tasks = json.loads((dest_dir / "tasks.json").read_text())
     assert tasks["run-tests"] == "pytest"
     assert tasks["format-code"] == "black ."

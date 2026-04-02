@@ -9,7 +9,6 @@ import pytest
 
 from cli.main import build_parser, cmd_doctor, cmd_init, cmd_sync, cmd_task
 
-
 # ---------------------------------------------------------------------------
 # Unit tests: direct function calls
 # ---------------------------------------------------------------------------
@@ -20,14 +19,21 @@ def test_cmd_init_returns_zero(tmp_path, monkeypatch, capsys):
     from cli.questionnaire import WorkspaceConfig
 
     fake_env = EnvInfo(
-        os_name="macos", python_version="3.13.0",
-        python_major=3, python_minor=13,
-        emacs_path=None, emacs_version=None,
+        os_name="macos",
+        python_version="3.13.0",
+        python_major=3,
+        python_minor=13,
+        emacs_path=None,
+        emacs_version=None,
     )
     fake_cfg = WorkspaceConfig(
-        emacs_style="minimal", profile="python-general",
-        ai_provider="claude", os_name="macos",
-        python_version="3.13.0", emacs_path=None, emacs_version=None,
+        emacs_style="minimal",
+        profile="python-general",
+        ai_provider="claude",
+        os_name="macos",
+        python_version="3.13.0",
+        emacs_path=None,
+        emacs_version=None,
     )
     monkeypatch.setattr("cli.main.detect", lambda: fake_env)
     monkeypatch.setattr("cli.main.ask", lambda env: fake_cfg)
@@ -43,10 +49,15 @@ def test_cmd_init_returns_zero(tmp_path, monkeypatch, capsys):
 
 def test_cmd_doctor_returns_zero(monkeypatch, capsys):
     from cli.questionnaire import WorkspaceConfig
+
     fake_cfg = WorkspaceConfig(
-        emacs_style="minimal", profile="python-general",
-        ai_provider="claude", os_name="macos",
-        python_version="3.13.0", emacs_path=None, emacs_version=None,
+        emacs_style="minimal",
+        profile="python-general",
+        ai_provider="claude",
+        os_name="macos",
+        python_version="3.13.0",
+        emacs_path=None,
+        emacs_version=None,
     )
     monkeypatch.setattr("cli.main.load", lambda: fake_cfg)
     monkeypatch.setattr("cli.main.run_checks", lambda reqs, cfg: [])
@@ -60,13 +71,45 @@ def test_cmd_doctor_returns_zero(monkeypatch, capsys):
     assert "doctor mock output" in captured.out
 
 
-def test_cmd_sync_returns_zero(capsys):
+def test_cmd_sync_returns_zero(tmp_path, monkeypatch, capsys):
+    """cmd_sync loads config and regenerates workspace; verify happy path."""
+    from cli.questionnaire import WorkspaceConfig
+
+    fake_cfg = WorkspaceConfig(
+        emacs_style="minimal",
+        profile="python-general",
+        ai_provider="claude",
+        os_name="macos",
+        python_version="3.13.0",
+        emacs_path=None,
+        emacs_version=None,
+    )
+    monkeypatch.setattr("cli.main.load", lambda: fake_cfg)
+    monkeypatch.setattr("cli.main.generate_workspace", lambda cfg, dest: None)
+    monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
+
     parser = build_parser()
     args = parser.parse_args(["sync"])
     result = cmd_sync(args)
     assert result == 0
     captured = capsys.readouterr()
     assert "sync" in captured.out
+
+
+def test_cmd_sync_missing_config_returns_one(monkeypatch, capsys):
+    """cmd_sync returns 1 and prints a helpful message when workspace.toml is absent."""
+
+    def _raise():
+        raise FileNotFoundError("no workspace.toml")
+
+    monkeypatch.setattr("cli.main.load", lambda: _raise())
+
+    parser = build_parser()
+    args = parser.parse_args(["sync"])
+    result = cmd_sync(args)
+    assert result == 1
+    captured = capsys.readouterr()
+    assert "emaw init" in captured.out
 
 
 def test_cmd_task_dry_run(tmp_path, monkeypatch, capsys):
@@ -89,9 +132,10 @@ def test_cmd_task_execution_success(tmp_path, monkeypatch, capsys):
     emaw_dir.mkdir()
     (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \'hello\'"}', encoding="utf-8")
     monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
-    
+
     class MockResult:
         returncode = 0
+
     monkeypatch.setattr("cli.main.subprocess.run", lambda cmd, **kwargs: MockResult())
 
     parser = build_parser()
@@ -107,9 +151,10 @@ def test_cmd_task_execution_failure(tmp_path, monkeypatch, capsys):
     emaw_dir.mkdir()
     (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \'hello\'"}', encoding="utf-8")
     monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
-    
+
     class MockResult:
         returncode = 127
+
     monkeypatch.setattr("cli.main.subprocess.run", lambda cmd, **kwargs: MockResult())
 
     parser = build_parser()
@@ -187,8 +232,10 @@ def test_subprocess_sync():
 def test_subprocess_task(tmp_path: Path):
     emaw_dir = tmp_path / ".emaw"
     emaw_dir.mkdir()
-    (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \\"test execution\\""}', encoding="utf-8")
-    
+    (emaw_dir / "tasks.json").write_text(
+        '{"mock-task": "echo \\"test execution\\""}', encoding="utf-8"
+    )
+
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path.cwd())
 
@@ -215,4 +262,4 @@ def test_subprocess_version():
         text=True,
     )
     assert result.returncode == 0
-    assert "0.1.0" in result.stdout
+    assert "1.0.0" in result.stdout

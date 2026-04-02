@@ -3,10 +3,7 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from cli.discovery import discover_tasks
-
 
 # ---------------------------------------------------------------------------
 # pyproject.toml discovery
@@ -25,7 +22,7 @@ def test_pyproject_explicit_emaw_tasks(tmp_path: Path) -> None:
 
 def test_pyproject_implicit_pytest(tmp_path: Path) -> None:
     (tmp_path / "pyproject.toml").write_text(
-        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]",
+        '[tool.pytest.ini_options]\ntestpaths = ["tests"]',
         encoding="utf-8",
     )
     tasks = discover_tasks(tmp_path)
@@ -148,39 +145,47 @@ def test_no_files_returns_empty_dict(tmp_path: Path) -> None:
 
 def test_extract_executable_plain() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("pytest") == "pytest"
 
 
 def test_extract_executable_with_args() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("pytest tests/ -v") == "pytest"
 
 
 def test_extract_executable_env_var_prefix() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("PYTHONPATH=. pytest") == "pytest"
 
 
 def test_extract_executable_uv_run() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("uv run pytest") == "pytest"
 
 
 def test_extract_executable_npm_run() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("npm run build") == "build"
 
 
 def test_extract_executable_make() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("make test") == "test"
 
 
 def test_extract_executable_poetry_run() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("poetry run black .") == "black"
 
 
 def test_extract_executable_empty() -> None:
     from cli.doctor import _extract_executable
+
     assert _extract_executable("") == ""

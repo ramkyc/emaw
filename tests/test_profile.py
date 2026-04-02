@@ -1,8 +1,9 @@
 """Tests for profile resolution logic."""
 
 import pytest
+
 from cli.env import EnvInfo
-from cli.profile import resolve, ProfileRequirements
+from cli.profile import resolve
 from cli.questionnaire import WorkspaceConfig
 
 

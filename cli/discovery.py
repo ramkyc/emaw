@@ -2,8 +2,16 @@
 
 import json
 import re
-import tomllib
+import sys
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomllib
+    except ImportError:
+        import tomli as tomllib  # type: ignore[no-redef]
 
 
 def _discover_pyproject(project_root: Path) -> dict[str, str]:
@@ -90,7 +98,7 @@ def discover_tasks(project_root: Path | None = None) -> dict[str, str]:
         project_root = Path.cwd()
 
     tasks: dict[str, str] = {}
-    
+
     # Merge order sets precedence: pyproject explicit tasks overwrite makefile/npm if name collisions
     tasks.update(_discover_package_json(project_root))
     tasks.update(_discover_makefile(project_root))

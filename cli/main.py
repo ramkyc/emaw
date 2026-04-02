@@ -1,18 +1,18 @@
 """emaw – Emacs AI Workspace Bootstrapper CLI entrypoint."""
 
 import argparse
-import sys
 import json
 import subprocess
+import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 from cli.config import DEFAULT_CONFIG_PATH, load, save
+from cli.doctor import print_report, run_checks
 from cli.env import detect
-from cli.questionnaire import ask
 from cli.generator import generate_workspace
 from cli.profile import resolve
-from cli.doctor import run_checks, print_report
-from pathlib import Path
+from cli.questionnaire import ask
 
 try:
     _VERSION = version("emacs-ai-workspace")
@@ -26,7 +26,7 @@ def cmd_init(args: argparse.Namespace) -> int:  # noqa: ARG001
     cfg = ask(env)
     save(cfg)
     print(f"\nWorkspace config saved to {DEFAULT_CONFIG_PATH}")
-    
+
     dest_dir = Path.cwd() / ".emaw"
     generate_workspace(cfg, dest_dir)
     print(f"Generated workspace files in {dest_dir}")
@@ -37,22 +37,31 @@ def cmd_doctor(args: argparse.Namespace) -> int:  # noqa: ARG001
     """Validate system tools and Python dependencies against the profile."""
     try:
         cfg = load()
-    except Exception as e:
+    except Exception:
         print("Error: Could not load workspace.toml.")
         print("Please run `emaw init` first to generate a workspace configuration.")
         return 1
-        
+
     reqs = resolve(cfg)
     results = run_checks(reqs, cfg)
     print_report(results, cfg)
-    
+
     missing_deps = any(not r.status for r in results)
     return 1 if missing_deps else 0
 
 
 def cmd_sync(args: argparse.Namespace) -> int:  # noqa: ARG001
-    """Stub for the sync subcommand."""
-    print("emaw sync: not yet implemented")
+    """Regenerate workspace files from the saved workspace configuration."""
+    try:
+        cfg = load()
+    except Exception:
+        print("Error: Could not load workspace configuration.")
+        print("Please run `emaw init` first to create a workspace configuration.")
+        return 1
+
+    dest_dir = Path.cwd() / ".emaw"
+    generate_workspace(cfg, dest_dir)
+    print(f"emaw sync: regenerated workspace in {dest_dir}")
     return 0
 
 
@@ -95,9 +104,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="emaw",
         description="Provision a productive AI-assisted coding environment in Emacs.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"emaw {_VERSION}"
-    )
+    parser.add_argument("--version", action="version", version=f"emaw {_VERSION}")
 
     subparsers = parser.add_subparsers(dest="command", metavar="<command>")
     subparsers.required = True
@@ -105,10 +112,12 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("init", help="Initialise a new Emacs AI workspace.")
     subparsers.add_parser("doctor", help="Run workspace health checks.")
     subparsers.add_parser("sync", help="Sync workspace with the latest generated config.")
-    
+
     task_parser = subparsers.add_parser("task", help="Execute a workspace task.")
     task_parser.add_argument("task_name", help="Name of the task to execute")
-    task_parser.add_argument("--dry-run", action="store_true", help="Print expected command without executing")
+    task_parser.add_argument(
+        "--dry-run", action="store_true", help="Print expected command without executing"
+    )
 
     return parser
 

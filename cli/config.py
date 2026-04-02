@@ -1,13 +1,19 @@
 """TOML persistence for workspace configuration."""
 
-import tomllib
+import sys
 from pathlib import Path
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    try:
+        import tomllib
+    except ImportError:
+        import tomli as tomllib  # type: ignore[no-redef]
 
 from cli.questionnaire import WorkspaceConfig
 
-DEFAULT_CONFIG_PATH: Path = (
-    Path.home() / ".config" / "emacs-ai-workspace" / "workspace.toml"
-)
+DEFAULT_CONFIG_PATH: Path = Path.home() / ".config" / "emacs-ai-workspace" / "workspace.toml"
 
 # None values are stored as "" (TOML has no null type).
 _TOML_TEMPLATE = """\

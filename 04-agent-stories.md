@@ -239,3 +239,48 @@ completion notifications.
 - Long-running task completes: mode-line shows `emaw:run-tests SUCCESS`
 - Failed task: mode-line shows `emaw:run-tests FAILED`
 - ERT tests for sentinel parsing and status display
+
+---
+
+## Epic 5: Release Polish
+
+### Story 5.1: Polish & Release Readiness ✅
+
+**As a** developer who wants to share or deploy `emaw`,
+**I want** a complete README, a one-command installer, a proper 1.0.0 release
+tag, and all loose ends tidied,
+**so that** the project is ready for public use and easy for new contributors
+to pick up.
+
+**Acceptance criteria:**
+
+- `pyproject.toml` version is `1.0.0`; metadata includes `authors`, `keywords`,
+  `classifiers`, and `urls`.
+- `README.md` contains: badges, pitch, install instructions (curl one-liner +
+  from-source), quickstart, Emacs integration reference, task discovery
+  reference, profiles table, command reference, repo structure, contributing
+  guide, and license.
+- `install/quickstart.sh` is executable, idempotent, creates
+  `~/.local/share/emaw-venv`, pip-installs `emacs-ai-workspace`, and symlinks
+  `emaw` into `~/.local/bin`.
+- `emaw sync` loads `~/.config/emacs-ai-workspace/workspace.toml` and
+  re-runs `generate_workspace()`.
+- All sync paths are covered by unit tests with proper mocking.
+- `ruff check .` and `black --check .` report zero issues.
+- `pytest` passes 100 %.
+- `python -m build --wheel` completes without errors.
+- `git tag v1.0.0` is applied.
+
+**Files changed:**
+
+| File | Change |
+| --- | --- |
+| `pyproject.toml` | Version 1.0.0 + full metadata |
+| `README.md` | Complete usage guide |
+| `install/quickstart.sh` | One-command idempotent installer |
+| `cli/main.py` | `cmd_sync()` fully implemented |
+| `cli/config.py` | `tomllib` compat shim for Python 3.10 |
+| `cli/discovery.py` | `tomllib` compat shim for Python 3.10 |
+| `tests/test_cli.py` | Sync tests properly mocked; version test updated |
+
+**Not included:** PyPI publish, docs site, changelog automation.

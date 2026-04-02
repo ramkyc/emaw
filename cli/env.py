@@ -10,12 +10,12 @@ from dataclasses import dataclass
 class EnvInfo:
     """Snapshot of the relevant local environment."""
 
-    os_name: str            # "macos" | "linux" | "unsupported"
-    python_version: str     # e.g. "3.13.1"
+    os_name: str  # "macos" | "linux" | "unsupported"
+    python_version: str  # e.g. "3.13.1"
     python_major: int
     python_minor: int
-    emacs_path: str | None      # absolute path resolved from PATH, or None
-    emacs_version: str | None   # e.g. "29.4", or None if not found/parseable
+    emacs_path: str | None  # absolute path resolved from PATH, or None
+    emacs_version: str | None  # e.g. "29.4", or None if not found/parseable
 
 
 def _detect_os() -> str:
@@ -47,7 +47,7 @@ def _detect_emacs() -> tuple[str | None, str | None]:
         first_line = result.stdout.splitlines()[0] if result.stdout else ""
         prefix = "GNU Emacs "
         if first_line.startswith(prefix):
-            emacs_version = first_line[len(prefix):].strip()
+            emacs_version = first_line[len(prefix) :].strip()
             return path, emacs_version
         return path, None
     except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
