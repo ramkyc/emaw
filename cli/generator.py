@@ -5,6 +5,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from cli.discovery import discover_tasks
 from cli.profile import resolve
 from cli.questionnaire import WorkspaceConfig
 
@@ -23,7 +24,17 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
     # Ensure destination directory exists
     dest_dir.mkdir(parents=True, exist_ok=True)
 
-    # Write tasks map natively to the workspace directory
+    # Discover project tasks from pyproject.toml / Makefile / package.json.
+    # Discovery root is the real project root (parent of the .emaw/ dir).
+    project_root = dest_dir.parent
+    discovered = discover_tasks(project_root)
+
+    # Merge: profile tasks act as fallback; discovered tasks take precedence.
+    merged_tasks: dict[str, str] = dict(reqs.task_commands)  # start with profile
+    merged_tasks.update(discovered)                           # discovered wins on collision
+    reqs.task_commands = merged_tasks
+
+    # Write merged tasks map to workspace directory.
     tasks_json_content = json.dumps(reqs.task_commands, indent=2) + "\n"
     (dest_dir / "tasks.json").write_text(tasks_json_content, encoding="utf-8")
 

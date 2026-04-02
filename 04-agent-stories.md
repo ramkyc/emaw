@@ -194,3 +194,27 @@ Implement actual task execution behind the existing `emaw task <name>` CLI dispa
 **Implementation Output**
 - Store resolved task commands in `.emaw/tasks.json` at generation time mapping labels to shell commands strings.
 - `cmd_task()` reads `.emaw/tasks.json`, executes directly via `subprocess.run(shell=True)`.
+
+---
+
+## Story 4.4: Task Discovery & Validation
+
+**Scope**
+Automatically discover real project tasks from common files (pyproject.toml, Makefile, package.json) and validate task configuration during `emaw doctor`.
+
+**Requirements**
+- Scan project root for task definitions in standard formats
+- Auto-populate/merge `tasks.json` with discovered commands
+- `emaw doctor` validates tasks.json + dependencies + task executability
+- Generate task documentation shown by Emacs command help
+
+**Acceptance Criteria**
+- `emaw init` discovers tasks from pyproject.toml/Makefile/package.json
+- `emaw doctor` reports task validation status (missing deps, invalid commands)
+- Emacs `C-c C-e t1` shows task docstring with discovered command
+- Tests cover discovery from all three formats + validation edge cases
+
+**Constraints**
+- Discovery is additive — profile tasks always available as fallback
+- Validation is non-destructive (reports only)
+- Keep `tasks.json` format unchanged

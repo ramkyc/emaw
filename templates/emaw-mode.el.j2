@@ -32,12 +32,12 @@
   (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
     (async-shell-command "emaw sync" "*emaw-sync*")))
 
-{% for task in reqs.task_commands %}
-(defun emaw-task-{{ task }} ()
-  "Run the emaw {{ task }} task and show the output."
+{% for task_name, task_cmd in reqs.task_commands.items() %}
+(defun emaw-task-{{ task_name }} ()
+  "Run the {{ task_name }} task (`{{ task_cmd }}') and show the output."
   (interactive)
   (let ((default-directory (or (locate-dominating-file default-directory ".emaw") default-directory)))
-    (async-shell-command "emaw task {{ task }}" "*emaw-task-{{ task }}*")))
+    (async-shell-command "emaw task {{ task_name }}" "*emaw-task-{{ task_name }}*")))
 {% endfor %}
 
 (defvar emaw-mode-map
@@ -51,8 +51,8 @@
     
     (define-prefix-command 'emaw-task-prefix-map)
     (define-key map (kbd "C-c C-e t") 'emaw-task-prefix-map)
-    {% for task in reqs.task_commands %}
-    (define-key map (kbd "C-c C-e t {{ loop.index }}") #'emaw-task-{{ task }})
+    {% for task_name, task_cmd in reqs.task_commands.items() %}
+    (define-key map (kbd "C-c C-e t {{ loop.index }}") #'emaw-task-{{ task_name }})
     {% endfor %}
     map)
   "Keymap for `emaw-mode'.")
