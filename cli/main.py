@@ -2,6 +2,8 @@
 
 import argparse
 import sys
+import json
+import subprocess
 from importlib.metadata import PackageNotFoundError, version
 
 from cli.config import DEFAULT_CONFIG_PATH, load, save
@@ -55,9 +57,36 @@ def cmd_sync(args: argparse.Namespace) -> int:  # noqa: ARG001
 
 
 def cmd_task(args: argparse.Namespace) -> int:
-    """Stub for the task subcommand."""
-    print(f"emaw task: executing {args.task_name} (not yet implemented)")
-    return 0
+    """Execute a real shell task mapped via `.emaw/tasks.json`."""
+    tasks_file = Path.cwd() / ".emaw" / "tasks.json"
+    if not tasks_file.exists():
+        print("Error: Could not find .emaw/tasks.json.")
+        print("Please run `emaw init` inside your project root first.")
+        return 1
+
+    try:
+        tasks = json.loads(tasks_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        print("Error: .emaw/tasks.json is malformed.")
+        return 1
+
+    cmd = tasks.get(args.task_name)
+    if not cmd:
+        print(f"Error: Task '{args.task_name}' not found in configuration.")
+        return 1
+
+    if args.dry_run:
+        print(f"emaw task: {args.task_name} (dry-run)")
+        print(f"Command: {cmd}")
+        return 0
+
+    print(f"emaw: starting task {args.task_name}: {cmd}")
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode == 0:
+        print(f"\\nemaw: task {args.task_name} [SUCCESS]")
+    else:
+        print(f"\\nemaw: task {args.task_name} [FAILED] (exit code {result.returncode})")
+    return result.returncode
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -79,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     
     task_parser = subparsers.add_parser("task", help="Execute a workspace task.")
     task_parser.add_argument("task_name", help="Name of the task to execute")
+    task_parser.add_argument("--dry-run", action="store_true", help="Print expected command without executing")
 
     return parser
 

@@ -163,3 +163,34 @@ Expose generated workspace task commands inside Emacs through `emaw-mode`, so us
 - `C-c C-e s` → `emaw-sync`
 - Additional task bindings added dynamically via `C-c C-e t <index>` mapping deterministically.
 
+
+---
+
+### Story 4.3: Real CLI Task Execution
+
+**Scope**
+Implement actual task execution behind the existing `emaw task <name>` CLI dispatch so Emacs commands invoke real workspace tasks, not just stubs.
+
+**Requirements**
+- Extend `cmd_task()` to execute tasks from `reqs.task_commands`
+- Support at least shell command execution (MVP)
+- Handle task failures, output parsing, and success status
+- Preserve project-root execution context from Emacs dispatch
+- Add CLI `--dry-run` flag for validation
+
+**Acceptance Criteria**
+- `emaw task run-tests` executes the real task command for that label
+- CLI returns non-zero exit codes on task failure
+- Task output streams to stdout/stderr as expected by Emacs buffers
+- Tests cover happy path, failure cases, and dry-run
+- Generated Emacs commands see the same task success/failure behavior as CLI
+
+**Constraints**
+- Keep Emacs layer unchanged — only extend CLI backend
+- Support shell commands first (e.g. `make test`, `black .`, `ruff check .`)
+- Defer makefile/python script discovery to future stories if needed
+- Tasks run from project root (`.emaw` parent directory)
+
+**Implementation Output**
+- Store resolved task commands in `.emaw/tasks.json` at generation time mapping labels to shell commands strings.
+- `cmd_task()` reads `.emaw/tasks.json`, executes directly via `subprocess.run(shell=True)`.

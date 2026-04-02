@@ -62,6 +62,7 @@ def test_generate_workspace_creates_files(
     assert (dest_dir / "early-init.el").is_file()
     assert (dest_dir / "init.el").is_file()
     assert (dest_dir / "emaw-mode.el").is_file()
+    assert (dest_dir / "tasks.json").is_file()
 
 
 def test_generate_workspace_content(
@@ -204,3 +205,17 @@ def test_emaw_mode_content(
     assert "locate-dominating-file default-directory \".emaw\"" in text
     assert "C-c C-e t 1" in text
     assert "#'emaw-task-run-tests" in text
+
+
+def test_generate_tasks_json_content(
+    mock_config: WorkspaceConfig, tmp_path: Path
+) -> None:
+    """tasks.json maps labels to shell execution commands."""
+    dest_dir = tmp_path / ".emaw"
+    generate_workspace(mock_config, dest_dir)
+
+    import json
+    tasks = json.loads((dest_dir / "tasks.json").read_text())
+    assert tasks["run-tests"] == "pytest"
+    assert tasks["format-code"] == "black ."
+    assert tasks["lint-code"] == "ruff check ."

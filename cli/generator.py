@@ -1,5 +1,6 @@
 """Generator module for emitting the Emacs AI Workspace files."""
 
+import json
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
@@ -21,6 +22,10 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
 
     # Ensure destination directory exists
     dest_dir.mkdir(parents=True, exist_ok=True)
+
+    # Write tasks map natively to the workspace directory
+    tasks_json_content = json.dumps(reqs.task_commands, indent=2) + "\n"
+    (dest_dir / "tasks.json").write_text(tasks_json_content, encoding="utf-8")
 
     # Context shared by all templates
     context = {"config": config, "reqs": reqs}

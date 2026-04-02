@@ -1,7 +1,9 @@
 """Tests for CLI skeleton – Story 1.1."""
 
+import os
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -67,13 +69,56 @@ def test_cmd_sync_returns_zero(capsys):
     assert "sync" in captured.out
 
 
-def test_cmd_task_returns_zero(capsys):
+def test_cmd_task_dry_run(tmp_path, monkeypatch, capsys):
+    emaw_dir = tmp_path / ".emaw"
+    emaw_dir.mkdir()
+    (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \'hello\'"}', encoding="utf-8")
+    monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
+
+    parser = build_parser()
+    args = parser.parse_args(["task", "mock-task", "--dry-run"])
+    result = cmd_task(args)
+    assert result == 0
+    captured = capsys.readouterr()
+    assert "mock-task (dry-run)" in captured.out
+    assert "echo 'hello'" in captured.out
+
+
+def test_cmd_task_execution_success(tmp_path, monkeypatch, capsys):
+    emaw_dir = tmp_path / ".emaw"
+    emaw_dir.mkdir()
+    (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \'hello\'"}', encoding="utf-8")
+    monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
+    
+    class MockResult:
+        returncode = 0
+    monkeypatch.setattr("cli.main.subprocess.run", lambda cmd, **kwargs: MockResult())
+
     parser = build_parser()
     args = parser.parse_args(["task", "mock-task"])
     result = cmd_task(args)
     assert result == 0
     captured = capsys.readouterr()
-    assert "mock-task" in captured.out
+    assert "[SUCCESS]" in captured.out
+
+
+def test_cmd_task_execution_failure(tmp_path, monkeypatch, capsys):
+    emaw_dir = tmp_path / ".emaw"
+    emaw_dir.mkdir()
+    (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \'hello\'"}', encoding="utf-8")
+    monkeypatch.setattr("cli.main.Path.cwd", lambda: tmp_path)
+    
+    class MockResult:
+        returncode = 127
+    monkeypatch.setattr("cli.main.subprocess.run", lambda cmd, **kwargs: MockResult())
+
+    parser = build_parser()
+    args = parser.parse_args(["task", "mock-task"])
+    result = cmd_task(args)
+    assert result == 127
+    captured = capsys.readouterr()
+    assert "[FAILED]" in captured.out
+    assert "127" in captured.out
 
 
 # ---------------------------------------------------------------------------
@@ -139,10 +184,23 @@ def test_subprocess_sync():
     assert "sync" in result.stdout
 
 
-def test_subprocess_task():
-    result = _run("task", "mock-task")
+def test_subprocess_task(tmp_path: Path):
+    emaw_dir = tmp_path / ".emaw"
+    emaw_dir.mkdir()
+    (emaw_dir / "tasks.json").write_text('{"mock-task": "echo \\"test execution\\""}', encoding="utf-8")
+    
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path.cwd())
+
+    result = subprocess.run(
+        [sys.executable, "-m", "cli.main", "task", "mock-task"],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        env=env,
+    )
     assert result.returncode == 0
-    assert "mock-task" in result.stdout
+    assert "[SUCCESS]" in result.stdout
 
 
 def test_subprocess_no_args_fails():

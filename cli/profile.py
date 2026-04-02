@@ -11,7 +11,7 @@ class ProfileRequirements:
     system_dependencies: list[str] = field(default_factory=list)
     emacs_packages: list[str] = field(default_factory=list)
     ai_adapters: list[str] = field(default_factory=list)
-    task_commands: list[str] = field(default_factory=list)
+    task_commands: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -21,7 +21,7 @@ class ProfileDefinition:
     name: str
     system_dependencies: list[str] = field(default_factory=list)
     emacs_packages: list[str] = field(default_factory=list)
-    task_commands: list[str] = field(default_factory=list)
+    task_commands: dict[str, str] = field(default_factory=dict)
 
 
 # Base requirements applied to all generated workspaces
@@ -34,25 +34,38 @@ _PROFILES: dict[str, ProfileDefinition] = {
         name="python-general",
         system_dependencies=["python3", "pip", "python-lsp-server"],
         emacs_packages=["python-mode", "lsp-mode", "corfu", "vertico"],
-        task_commands=["run-tests", "format-code", "lint-code"],
+        task_commands={
+            "run-tests": "pytest",
+            "format-code": "black .",
+            "lint-code": "ruff check .",
+        },
     ),
     "python-quant": ProfileDefinition(
         name="python-quant",
         system_dependencies=["python3", "pip", "python-lsp-server", "jupyter"],
         emacs_packages=["python-mode", "lsp-mode", "ein", "corfu"],
-        task_commands=["run-backtest", "open-notebook"],
+        task_commands={
+            "run-backtest": "python run_backtest.py",
+            "open-notebook": "jupyter notebook .",
+        },
     ),
     "claude-centric": ProfileDefinition(
         name="claude-centric",
         system_dependencies=["node", "npm"],  # For claude-code cli
         emacs_packages=["markdown-mode"],
-        task_commands=["claude-chat", "claude-review-diff"],
+        task_commands={
+            "claude-chat": "claude",
+            "claude-review-diff": "git diff | claude --stdin",
+        },
     ),
     "local-ollama": ProfileDefinition(
         name="local-ollama",
         system_dependencies=["ollama"],
         emacs_packages=["ellama"],
-        task_commands=["ollama-chat", "ollama-explain-code"],
+        task_commands={
+            "ollama-chat": "ollama run llama3",
+            "ollama-explain-code": "ollama run llama3 'Explain this code'",
+        },
     ),
 }
 
@@ -63,7 +76,7 @@ def resolve(config: WorkspaceConfig) -> ProfileRequirements:
         system_dependencies=_BASE_SYSTEM_DEPS.copy(),
         emacs_packages=_BASE_EMACS_PACKAGES.copy(),
         ai_adapters=[],
-        task_commands=[],
+        task_commands={},
     )
 
     # 1. Apply profile requirements
@@ -71,7 +84,7 @@ def resolve(config: WorkspaceConfig) -> ProfileRequirements:
     if profile_def:
         reqs.system_dependencies.extend(profile_def.system_dependencies)
         reqs.emacs_packages.extend(profile_def.emacs_packages)
-        reqs.task_commands.extend(profile_def.task_commands)
+        reqs.task_commands.update(profile_def.task_commands)
 
     # 2. Apply AI Provider requirements
     if config.ai_provider == "claude":
@@ -92,6 +105,6 @@ def resolve(config: WorkspaceConfig) -> ProfileRequirements:
     reqs.system_dependencies = list(dict.fromkeys(reqs.system_dependencies))
     reqs.emacs_packages = list(dict.fromkeys(reqs.emacs_packages))
     reqs.ai_adapters = list(dict.fromkeys(reqs.ai_adapters))
-    reqs.task_commands = list(dict.fromkeys(reqs.task_commands))
+    # dictionary keys are naturally deduplicated in reqs.task_commands using update()
 
     return reqs
