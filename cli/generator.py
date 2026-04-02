@@ -33,6 +33,10 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
     init_content = env.get_template("init.el.j2").render(**context)
     (dest_dir / "init.el").write_text(init_content, encoding="utf-8")
 
+    # Render emaw-mode.el
+    emaw_mode_content = env.get_template("emaw-mode.el.j2").render(**context)
+    (dest_dir / "emaw-mode.el").write_text(emaw_mode_content, encoding="utf-8")
+
     # Render one adapter file per approved AI adapter
     for adapter in reqs.ai_adapters:
         if adapter not in _APPROVED_ADAPTERS:

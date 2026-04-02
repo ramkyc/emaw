@@ -39,3 +39,12 @@
 {% else %}
 (message "emaw: no AI adapter configured")
 {% endif %}
+
+;; Load EMAW minor mode
+(let ((emaw-mode-file (expand-file-name "emaw-mode.el"
+                        (file-name-directory (or load-file-name buffer-file-name)))))
+  (if (file-exists-p emaw-mode-file)
+      (progn
+        (load-file emaw-mode-file)
+        (add-hook 'prog-mode-hook #'emaw-mode))
+    (message "emaw: emaw-mode.el not found")))

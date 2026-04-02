@@ -61,6 +61,7 @@ def test_generate_workspace_creates_files(
     assert dest_dir.is_dir()
     assert (dest_dir / "early-init.el").is_file()
     assert (dest_dir / "init.el").is_file()
+    assert (dest_dir / "emaw-mode.el").is_file()
 
 
 def test_generate_workspace_content(
@@ -160,3 +161,37 @@ def test_init_el_loads_claude_adapter(
     init_text = (dest_dir / "init.el").read_text()
     assert "claude-adapter.el" in init_text
     assert "load-file" in init_text
+
+
+# ---------------------------------------------------------------------------
+# Story 4.1 – Emacs Minor Mode Integration
+# ---------------------------------------------------------------------------
+
+
+def test_init_el_loads_emaw_mode(
+    mock_config: WorkspaceConfig, tmp_path: Path
+) -> None:
+    """init.el contains code to load and hook emaw-mode.el."""
+    dest_dir = tmp_path / ".emaw"
+    generate_workspace(mock_config, dest_dir)
+
+    init_text = (dest_dir / "init.el").read_text()
+    assert "emaw-mode.el" in init_text
+    assert "prog-mode-hook" in init_text
+
+
+def test_emaw_mode_content(
+    mock_config: WorkspaceConfig, tmp_path: Path
+) -> None:
+    """Generated emaw-mode.el contains the necessary interactive commands and map."""
+    dest_dir = tmp_path / ".emaw"
+    generate_workspace(mock_config, dest_dir)
+
+    text = (dest_dir / "emaw-mode.el").read_text()
+    assert "(defun emaw-doctor ()" in text
+    assert "(defun emaw-init ()" in text
+    assert "(async-shell-command \"emaw doctor\"" in text
+    assert "(async-shell-command \"emaw init\"" in text
+    assert "(define-minor-mode emaw-mode" in text
+    assert "C-c C-e d" in text
+    assert "C-c C-e i" in text

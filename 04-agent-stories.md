@@ -98,3 +98,32 @@ generation begins.
 **Not included:** Config generation, doctor flow, profile resolution.
 
 **Next story:** Story 1.4 – Profile Schema and Resolver.
+
+---
+
+## Epic 4: Emacs Integration
+
+### Story 4.1: Emacs Minor Mode Integration (minimal)
+
+**Scope**
+Create the core Emacs minor mode that orchestrates emaw workflows from inside Emacs.
+
+**Requirements**
+- `emaw-mode` minor mode with basic keybindings
+- Call `emaw doctor` from Emacs and display results in `*emaw-doctor*` buffer
+- Call `emaw init` from Emacs with current project context
+- Simple status indicator in mode-line
+- No complex UI yet
+
+**Acceptance Criteria**
+- `M-x emaw-doctor` runs doctor and shows results in `*emaw-doctor*` buffer
+- `M-x emaw-init` runs init and shows output
+- Mode-line indicator shows "emaw" when active
+- Keybindings: `C-c C-e` prefix for emaw commands
+- Tests for mode activation and command execution
+
+**Constraints**
+- Use existing CLI via `async-shell-command`
+- No complex async handling yet
+- Simple buffer output only
+- No package installation or dependency management yet
