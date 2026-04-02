@@ -2,6 +2,8 @@
 
 import importlib.util
 import shutil
+import urllib.request
+import urllib.error
 from dataclasses import dataclass
 
 from cli.profile import ProfileRequirements
@@ -74,6 +76,49 @@ def _check_python_lib(name: str) -> CheckResult:
     )
 
 
+def _check_ai_adapter(name: str) -> CheckResult:
+    """Check if an AI adapter's required backend is reachable."""
+    if name == "claude":
+        path = shutil.which("claude")
+        if path:
+            return CheckResult(
+                name=name,
+                category="adapter",
+                status=True,
+                details=f"CLI found at {path}",
+            )
+        return CheckResult(
+            name=name,
+            category="adapter",
+            status=False,
+            details="missing 'claude' CLI (npm install -g @anthropic-ai/claude-code)",
+        )
+    elif name == "ollama":
+        try:
+            # Short timeout since it should be local
+            urllib.request.urlopen("http://localhost:11434/", timeout=2.0)
+            return CheckResult(
+                name=name,
+                category="adapter",
+                status=True,
+                details="daemon responding on localhost:11434",
+            )
+        except (urllib.error.URLError, TimeoutError):
+            return CheckResult(
+                name=name,
+                category="adapter",
+                status=False,
+                details="connection refused or timeout on localhost:11434",
+            )
+    
+    return CheckResult(
+        name=name,
+        category="adapter",
+        status=False,
+        details="unknown adapter type",
+    )
+
+
 def run_checks(reqs: ProfileRequirements, config: WorkspaceConfig) -> list[CheckResult]:
     """Execute all checks against the required dependencies."""
     results = []
@@ -90,6 +135,10 @@ def run_checks(reqs: ProfileRequirements, config: WorkspaceConfig) -> list[Check
 
     results.append(_check_python_lib("jinja2"))
     
+    # AI Adapters
+    for adapter in getattr(reqs, "ai_adapters", []):
+        results.append(_check_ai_adapter(adapter))
+    
     return results
 
 
@@ -102,6 +151,7 @@ def print_report(results: list[CheckResult], config: WorkspaceConfig) -> None:
 
     system_checks = [r for r in results if r.category == "system"]
     python_checks = [r for r in results if r.category == "python"]
+    adapter_checks = [r for r in results if r.category == "adapter"]
 
     if system_checks:
         print("\nSystem Tools:")
@@ -112,6 +162,12 @@ def print_report(results: list[CheckResult], config: WorkspaceConfig) -> None:
     if python_checks:
         print("\nPython Packages:")
         for res in python_checks:
+            mark = "[x]" if res.status else "[!]"
+            print(f" {mark} {res.name} ({res.details})")
+
+    if adapter_checks:
+        print("\nAI Adapters:")
+        for res in adapter_checks:
             mark = "[x]" if res.status else "[!]"
             print(f" {mark} {res.name} ({res.details})")
 

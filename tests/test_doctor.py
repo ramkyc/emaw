@@ -1,8 +1,11 @@
 """Tests for the workspace doctor."""
 
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+import urllib.error
+import sys
+from io import StringIO
 
-from cli.doctor import run_checks, _SYSTEM_EXEC_MAP
+from cli.doctor import run_checks, _SYSTEM_EXEC_MAP, _check_ai_adapter, print_report, CheckResult
 from cli.profile import ProfileRequirements
 from cli.questionnaire import WorkspaceConfig
 
@@ -33,9 +36,9 @@ def test_doctor_all_pass() -> None:
 
         assert all(r.status is True for r in results)
         
-        # We always check emacs automatically, plus 5 deps in the list
+        # We always check emacs automatically, plus 5 deps in the list, plus 1 AI adapter
         names = {r.name for r in results}
-        assert names == {"emacs", "git", "ripgrep", "python3", "node", "jinja2"}
+        assert names == {"emacs", "git", "ripgrep", "python3", "node", "jinja2", "claude"}
 
 
 def test_doctor_missing_tools() -> None:
@@ -82,3 +85,59 @@ def test_system_exec_map() -> None:
     assert _SYSTEM_EXEC_MAP["ripgrep"] == "rg"
     assert _SYSTEM_EXEC_MAP["python-lsp-server"] == "pylsp"
     assert _SYSTEM_EXEC_MAP["python3"] == "python3"
+
+
+def test_check_ai_adapter_claude_found() -> None:
+    with patch("shutil.which", return_value="/usr/local/bin/claude"):
+        res = _check_ai_adapter("claude")
+        assert res.category == "adapter"
+        assert res.status is True
+        assert "/usr/local/bin/claude" in res.details
+
+
+def test_check_ai_adapter_claude_missing() -> None:
+    with patch("shutil.which", return_value=None):
+        res = _check_ai_adapter("claude")
+        assert res.status is False
+        assert "missing 'claude' CLI" in res.details
+
+
+def test_check_ai_adapter_ollama_responding() -> None:
+    with patch("urllib.request.urlopen") as mock_urlopen:
+        mock_urlopen.return_value = MagicMock()
+        res = _check_ai_adapter("ollama")
+        assert res.category == "adapter"
+        assert res.status is True
+        assert "responding on localhost:11434" in res.details
+
+
+def test_check_ai_adapter_ollama_missing() -> None:
+    with patch("urllib.request.urlopen", side_effect=urllib.error.URLError("mock error")):
+        res = _check_ai_adapter("ollama")
+        assert res.category == "adapter"
+        assert res.status is False
+        assert "connection refused" in res.details
+
+
+def test_print_report_with_adapters() -> None:
+    cfg = WorkspaceConfig(
+        emacs_style="minimal",
+        profile="python-general",
+        ai_provider="claude",
+        os_name="macos",
+        python_version="3.12.0",
+        emacs_path="/usr/local/bin/emacs",
+        emacs_version="29.1",
+    )
+    results = [
+        CheckResult(name="emacs", category="system", status=True, details="found"),
+        CheckResult(name="claude", category="adapter", status=True, details="found claude"),
+    ]
+
+    output = StringIO()
+    with patch("sys.stdout", output):
+        print_report(results, cfg)
+
+    printed = output.getvalue()
+    assert "AI Adapters:" in printed
+    assert "[x] claude (found claude)" in printed
