@@ -17,8 +17,16 @@ def generate_workspace(config: WorkspaceConfig, dest_dir: Path) -> None:
     """Resolve the profile requirements and generate the workspace files."""
     reqs = resolve(config)
 
-    # Locate templates relative to this file's parent
-    templates_dir = Path(__file__).parent.parent / "templates"
+    # Locate templates directory.
+    # When installed as a package, `templates` is a sibling package of `cli`.
+    # importlib.resources gives the correct path in both editable and wheel installs.
+    try:
+        from importlib.resources import files
+
+        templates_dir = Path(str(files("templates")))
+    except (TypeError, ModuleNotFoundError):
+        # Fallback for editable installs where importlib.resources may not resolve
+        templates_dir = Path(__file__).parent.parent / "templates"
     env = Environment(loader=FileSystemLoader(str(templates_dir)))
 
     # Ensure destination directory exists

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=61", "wheel", "build"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -40,8 +40,11 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["cli*"]
+include = ["cli*", "templates*"]
 exclude = ["tests*"]
+
+[tool.setuptools.package-data]
+templates = ["*.j2", "ai-adapters/*.j2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
