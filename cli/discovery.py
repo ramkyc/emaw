@@ -2,16 +2,8 @@
 
 import json
 import re
-import sys
+import tomllib
 from pathlib import Path
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    try:
-        import tomllib
-    except ImportError:
-        import tomli as tomllib  # type: ignore[no-redef]
 
 
 def _discover_pyproject(project_root: Path) -> dict[str, str]:

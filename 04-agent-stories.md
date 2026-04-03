@@ -284,3 +284,28 @@ to pick up.
 | `tests/test_cli.py` | Sync tests properly mocked; version test updated |
 
 **Not included:** PyPI publish, docs site, changelog automation.
+---
+
+## Story 5.1: Polish and Release Readiness
+
+**Scope**
+Final cleanup, documentation, install script, pyproject.toml version bump to
+v1.0.0, and flesh out the stubbed `emaw sync` command.
+
+**Requirements**
+
+1. README.md — complete usage guide with install, quick start, keybindings,
+   task discovery, doctor, profiles, and repository structure
+2. install/quickstart.sh — one-command install to `~/.local/bin/emaw`
+3. pyproject.toml — version bump to 1.0.0 and full packaging metadata
+4. emaw sync — regenerate workspace files from saved workspace.toml
+5. ruff/black — formatting pass, clean
+6. git tag v1.0.0
+
+**Acceptance Criteria**
+
+- README explains full workflow end-to-end
+- `install/quickstart.sh` is idempotent and works without sudo
+- `emaw sync` regenerates `.emaw/` from saved config, returns 0 on success
+- pytest passes 100%, ruff and black report clean
+- git tag v1.0.0 created

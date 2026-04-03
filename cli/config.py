@@ -1,15 +1,7 @@
 """TOML persistence for workspace configuration."""
 
-import sys
+import tomllib
 from pathlib import Path
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    try:
-        import tomllib
-    except ImportError:
-        import tomli as tomllib  # type: ignore[no-redef]
 
 from cli.questionnaire import WorkspaceConfig
 

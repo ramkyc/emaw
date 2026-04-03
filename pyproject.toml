@@ -1,29 +1,24 @@
 [build-system]
-requires = ["setuptools>=61", "wheel", "build"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "emacs-ai-workspace"
-version = "1.0.1"
+version = "1.0.0"
 description = "Provision a productive AI-assisted coding environment in Emacs."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "emaw contributors" }]
-keywords = ["emacs", "ai", "workspace", "claude", "ollama", "developer-tools"]
+authors = [{ name = "Ramakrishna C", email = "ramkyc@gmail.com" }]
+keywords = ["emacs", "ai", "workspace", "llm", "claude", "ollama"]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: MacOS",
-    "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Software Development :: Build Tools",
-    "Topic :: Text Editors :: Emacs",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: User Interfaces",
 ]
 dependencies = [
     "jinja2",
@@ -31,8 +26,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/yourname/emacs_tool"
-Repository = "https://github.com/yourname/emacs_tool"
-"Bug Tracker" = "https://github.com/yourname/emacs_tool/issues"
+Source = "https://github.com/yourname/emacs_tool"
 
 [project.scripts]
 emaw = "cli.main:main"
@@ -40,26 +34,24 @@ emaw = "cli.main:main"
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "ruff",
-    "black",
+    "ruff>=0.4",
+    "black>=24.0",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["cli*", "templates*"]
+include = ["cli*"]
 exclude = ["tests*"]
 
-[tool.setuptools.package-data]
-templates = ["*.j2"]
-cli = ["templates/*.j2"]
-
-
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
+target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+select = ["E", "F", "W", "I", "UP"]
 ignore = ["E501"]
 
 [tool.black]
